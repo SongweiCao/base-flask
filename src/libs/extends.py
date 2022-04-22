@@ -35,21 +35,19 @@ class _DictParse():
                                    action=item.get('action'), )
         try:
             res = req_parse.parse_args(req=value)
-            return True, res
+            return res
 
         except BadRequest as e:
             error_msg = getattr(e, 'data', {}).get('message')
             error_msg = str(error_msg) if error_msg else e
-            return False, error_msg
+            raise Exception(error_msg)
 
 
 def _reqparse(schema):
     def decorator(f):
         @wraps(f)
         def decorated(*args, **kwargs):
-            flag, req_args = _DictParse(schema)(g.params)
-            if not flag:
-                return ResMsg(success=False, msg=req_args).data
+            req_args = _DictParse(schema)(g.params)
             if not hasattr(g, 'data'):
                 g.data = {}
             g.data = dict(req_args)
